@@ -1,0 +1,772 @@
+{
+  "datasets": [
+    {
+      "name": "d9b2af62",
+      "displayName": "Payment Revenue Summary by Type and Amount",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT\n",
+        "    payment_type,\n",
+        "    ROUND(SUM(payment_value),2) AS revenue\n",
+        "FROM workspace.default.fact_payments\n",
+        "GROUP BY payment_type\n",
+        "ORDER BY revenue DESC;"
+      ]
+    },
+    {
+      "name": "f68e6068",
+      "displayName": "Total Payments Revenue Summary Report",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT ROUND(SUM(payment_value),2) AS total_revenue\n",
+        "FROM workspace.default.fact_payments;"
+      ]
+    },
+    {
+      "name": "7f1c3c3e",
+      "displayName": "Unique Order Count Summary",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT COUNT(DISTINCT order_id) AS total_orders\n",
+        "FROM workspace.default.fact_orders;"
+      ]
+    },
+    {
+      "name": "09c51a1d",
+      "displayName": "Customer Count Overview",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT COUNT(*) AS total_customers\n",
+        "FROM workspace.default.dim_customer;"
+      ]
+    },
+    {
+      "name": "5cf8e1d5",
+      "displayName": "Average Payment Insights",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT ROUND(\n",
+        "SUM(payment_value)/COUNT(DISTINCT order_id),2\n",
+        ") AS avg_order_value\n",
+        "FROM workspace.default.fact_payments;"
+      ]
+    },
+    {
+      "name": "c5e5fd93",
+      "displayName": "Monthly Revenue Analysis Report",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT\n",
+        "    CONCAT(year,'-',LPAD(month,2,'0')) AS year_month,\n",
+        "    ROUND(SUM(fp.payment_value),2) AS revenue\n",
+        "FROM workspace.default.fact_payments fp\n",
+        "JOIN workspace.default.fact_orders fo\n",
+        "ON fp.order_id = fo.order_id\n",
+        "JOIN workspace.default.dim_date d\n",
+        "ON DATE(fo.order_purchase_timestamp)=DATE(d.date)\n",
+        "GROUP BY year,month\n",
+        "ORDER BY year,month;"
+      ]
+    },
+    {
+      "name": "fd6df2ca",
+      "displayName": "Top Ten Cities by Customer Count",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT\n",
+        "    customer_city,\n",
+        "    COUNT(*) AS customers\n",
+        "FROM workspace.default.dim_customer\n",
+        "GROUP BY customer_city\n",
+        "ORDER BY customers DESC\n",
+        "LIMIT 10;"
+      ]
+    },
+    {
+      "name": "2d472a54",
+      "displayName": "Top 100 Sellers by Revenue and Total Orders",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT\n",
+        "    seller_id,\n",
+        "    COUNT(order_id) AS total_orders,\n",
+        "    ROUND(SUM(price),2) AS revenue\n",
+        "FROM workspace.default.fact_orders\n",
+        "GROUP BY seller_id\n",
+        "ORDER BY revenue DESC\n",
+        "LIMIT 100;"
+      ]
+    },
+    {
+      "name": "ce402f11",
+      "displayName": "Untitled dataset",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT\n",
+        "    p.product_category_name,\n",
+        "    ROUND(SUM(f.price),2) AS revenue\n",
+        "FROM workspace.default.fact_orders f\n",
+        "JOIN workspace.default.dim_product p\n",
+        "ON f.product_id = p.product_id\n",
+        "GROUP BY p.product_category_name\n",
+        "ORDER BY revenue DESC\n",
+        "LIMIT 10;"
+      ]
+    },
+    {
+      "name": "06a3f35e",
+      "displayName": "Untitled dataset",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `default`;\n",
+        "\n",
+        "SELECT\n",
+        "    c.customer_state,\n",
+        "    ROUND(AVG(f.price),2) AS avg_order_value\n",
+        "FROM workspace.default.fact_orders f\n",
+        "JOIN workspace.default.dim_customer c\n",
+        "ON f.customer_id = c.customer_id\n",
+        "GROUP BY c.customer_state\n",
+        "ORDER BY avg_order_value DESC;"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "da080670",
+      "displayName": "E-C Dashboard",
+      "layout": [
+        {
+          "widget": {
+            "name": "b5e2e5bd",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "d9b2af62",
+                  "fields": [
+                    {
+                      "name": "sum(revenue)",
+                      "expression": "SUM(`revenue`)"
+                    },
+                    {
+                      "name": "payment_type",
+                      "expression": "`payment_type`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "mark": {
+                "layout": "stack"
+              },
+              "frame": {
+                "title": "Revenue Distribution by Payment Method",
+                "showTitle": true,
+                "showDescription": false
+              },
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "sum(revenue)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "revenue"
+                },
+                "color": {
+                  "fieldName": "payment_type",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "905e5968",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "f68e6068",
+                  "fields": [
+                    {
+                      "name": "total_revenue",
+                      "expression": "`total_revenue`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "showDescription": false,
+                "title": "Total Revenue"
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_revenue",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    }
+                  },
+                  "rowNumber": 1
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            },
+            "specExtensions": {
+              "widgetBorderColor": {
+                "light": "#FC3636"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "5eb97bf0",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "7f1c3c3e",
+                  "fields": [
+                    {
+                      "name": "total_orders",
+                      "expression": "`total_orders`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Total Orders",
+                "showTitle": true,
+                "showDescription": false
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_orders",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    }
+                  },
+                  "rowNumber": 1
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            },
+            "specExtensions": {
+              "widgetBorderColor": {
+                "light": "#1135E8"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "27840112",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "09c51a1d",
+                  "fields": [
+                    {
+                      "name": "total_customers",
+                      "expression": "`total_customers`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Total Customers",
+                "showTitle": true,
+                "showDescription": false
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_customers",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    }
+                  },
+                  "rowNumber": 1
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            },
+            "specExtensions": {
+              "widgetBorderColor": {
+                "light": "#780EA9"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "95bf0f91",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "5cf8e1d5",
+                  "fields": [
+                    {
+                      "name": "avg_order_value",
+                      "expression": "`avg_order_value`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Average Order Value",
+                "showTitle": true,
+                "showDescription": false
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "avg_order_value",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    }
+                  },
+                  "rowNumber": 1
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            },
+            "specExtensions": {
+              "widgetBorderColor": {
+                "light": "#915A5A"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "3359eadc",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "c5e5fd93",
+                  "fields": [
+                    {
+                      "name": "year_month",
+                      "expression": "`year_month`"
+                    },
+                    {
+                      "name": "sum(revenue)",
+                      "expression": "SUM(`revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Monthly Revenue Trend",
+                "showTitle": true
+              },
+              "mark": {
+                "layout": "layer"
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "year_month",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(revenue)",
+                  "displayName": "revenue",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 2,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "3c600376",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fd6df2ca",
+                  "fields": [
+                    {
+                      "name": "sum(customers)",
+                      "expression": "SUM(`customers`)"
+                    },
+                    {
+                      "name": "customer_city",
+                      "expression": "`customer_city`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Customer Distribution Across Major Cities",
+                "showTitle": true
+              },
+              "mark": {
+                "layout": "group"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "sum(customers)",
+                  "displayName": "customers",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "customer_city",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "x-reversed"
+                    }
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "931afb22",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "2d472a54",
+                  "fields": [
+                    {
+                      "name": "total_orders",
+                      "expression": "`total_orders`"
+                    },
+                    {
+                      "name": "revenue",
+                      "expression": "`revenue`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Seller Orders vs Revenue Analysis",
+                "showTitle": true
+              },
+              "mark": {
+                "layout": "layer"
+              },
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "total_orders",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "revenue",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "84a0c0d9",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ce402f11",
+                  "fields": [
+                    {
+                      "name": "sum(revenue)",
+                      "expression": "SUM(`revenue`)"
+                    },
+                    {
+                      "name": "product_category_name",
+                      "expression": "`product_category_name`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Top Product Categories by Revenue",
+                "showTitle": true
+              },
+              "mark": {
+                "layout": "group"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "sum(revenue)",
+                  "displayName": "revenue",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "product_category_name",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "x-reversed"
+                    }
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 8,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "f07e8943",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "06a3f35e",
+                  "fields": [
+                    {
+                      "name": "customer_state",
+                      "expression": "`customer_state`"
+                    },
+                    {
+                      "name": "sum(avg_order_value)",
+                      "expression": "SUM(`avg_order_value`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "State-wise Customer Spending Analysis",
+                "showTitle": true
+              },
+              "mark": {
+                "layout": "group"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "customer_state",
+                  "scale": {
+                    "type": "categorical",
+                    "categorySize": {
+                      "type": "number-of-categories",
+                      "number": 5
+                    },
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(avg_order_value)",
+                  "displayName": "avg_order_value",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 8,
+            "width": 4,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "606c6de7",
+      "displayName": "Global Filters",
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
